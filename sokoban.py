@@ -144,10 +144,19 @@ boards = [
         "#####**#",
         "....#.##",
         "....####"
+    ],
+    [
+        "########",
+        "#..#@...",
+        "#...#XX#",
+        "#...#..#",
+        "####*.*#",
+        "....#.##",
+        "....####"
     ]]
 
 for board in boards:
-    U = 12+len(inspect.stack())
+    U = 16+len(inspect.stack())
     result = soko_solver(board)
     print(U-len(inspect.stack()))
     if result is not None:
