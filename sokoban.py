@@ -1,6 +1,5 @@
 from __future__ import annotations
 import inspect
-from collections import deque
 import copy
 from typing import TypeAlias, List, Dict, Tuple, Optional
 
@@ -39,16 +38,17 @@ class Board:
 
             if self.is_valid_move(new_pos):
                 new_brd = copy.deepcopy(self.brd)
+                block_new_pos = [(-1, -1)]
                 if new_brd[new_pos[0]][new_pos[1]] == 'X':  # Pushing the box
                     block_new_pos = vec_plus(new_pos, directions[ele])
                     if not self.is_valid_move(block_new_pos):
                         continue
                     new_brd[block_new_pos[0]][block_new_pos[1]] = "X"
-                if (new_brd[pos[0]][pos[1]] in self.targets):
-                    new_brd[pos[0]][pos[1]] = "*"
-                else:
-                    new_brd[pos[0]][pos[1]] = "."
+                new_brd[pos[0]][pos[1]] = "."
                 new_brd[new_pos[0]][new_pos[1]] = "@"
+                for pos2 in self.targets:
+                    if not (pos2 == new_pos or pos2 == block_new_pos):
+                        new_brd[pos2[0]][pos2[1]] = "*"
                 children.append(Board(new_brd, self.targets))
         return children
 
@@ -83,6 +83,7 @@ class Board:
         symbol_mapping = {
             '.': '⬛',  # Empty space
             '#': '🟦',  # Wall
+            ' ': '🟥',  # Outer space
             'X': '🟫',  # Box
             '@': '🚶',  # Player
             '*': '🎯'  # Target
@@ -128,22 +129,27 @@ def DFBnB(board: Board) -> Optional[List[str]]:
 boards = [
     [
         ".@.",
-        "#X.",
-        "#*."
+        "X..",
+        "*.."
     ],
     [
-        "X##",
-        "#@#",
-        "##*"
+        "X..",
+        "*@.",
+        "..."
     ],
     [
-        "########",
-        "#..#@.#.",
-        "#....X.#",
-        "#...#.X.",
-        "#####**#",
-        "....#.##",
-        "....####"
+        "@....",
+        ".X...",
+        "####.",
+        "   #*"
+    ],
+    [
+        "..#@.##",
+        "....X.#",
+        "...#.X.",
+        "####**#",
+        "   #.##",
+        "   ####"
     ],
     [
         "########",
@@ -156,7 +162,7 @@ boards = [
     ]]
 
 for board in boards:
-    U = 16+len(inspect.stack())
+    U = len(board)**2+len(inspect.stack())
     result = soko_solver(board)
     print(U-len(inspect.stack()))
     if result is not None:
