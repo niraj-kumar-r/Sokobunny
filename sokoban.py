@@ -44,7 +44,10 @@ class Board:
                     if not self.is_valid_move(block_new_pos):
                         continue
                     new_brd[block_new_pos[0]][block_new_pos[1]] = "X"
-                new_brd[pos[0]][pos[1]] = "."
+                if (new_brd[pos[0]][pos[1]] in self.targets):
+                    new_brd[pos[0]][pos[1]] = "*"
+                else:
+                    new_brd[pos[0]][pos[1]] = "*"
                 new_brd[new_pos[0]][new_pos[1]] = "@"
                 children.append(Board(new_brd))
         return children
