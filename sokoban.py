@@ -31,8 +31,8 @@ class Board:
             0 <= y < len(self.brd[0]) and \
             self.brd[x][y] != '#'
 
-    def find_children(self):
-        children = []
+    def find_children(self) -> List[Board]:
+        children: List[Board] = []
         pos, _, __ = self.find_OoIs()
         for ele in directions:
             new_pos = vec_plus(pos, directions[ele])
@@ -49,6 +49,13 @@ class Board:
                 children.append(Board(new_brd))
         return children
 
+    def solved(self) -> bool:
+        for row in self.brd:
+            for cell in row:
+                if cell == '*':
+                    return False
+        return True
+    
     def find_OoIs(self) -> Tuple[Vector, Vectors, Vectors]:
         """
         Returns the player, box and target positions
@@ -83,7 +90,7 @@ def soko_solver(board: list[str]):
     return DFBnB(board2)
 
 
-def DFBnB(board: Board):
+def DFBnB(board: Board) -> Optional[List[Board]]:
     global U
     if len(inspect.stack()) > U:
         return None
@@ -95,7 +102,7 @@ def DFBnB(board: Board):
     for brd in board.find_children():
         soln = DFBnB(brd)
         if soln is not None:
-            out = [board]+(soln)
+            out = [board] + soln
 
     return out
 
