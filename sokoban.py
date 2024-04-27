@@ -4,11 +4,15 @@ from collections import deque
 import copy
 from typing import TypeAlias, List, Dict, Tuple, Optional
 
-directions: Dict[str, Tuple[int, int]] = {
+directions: Dict[str, Vector] = {
     'U': (-1, 0), 'D': (1, 0), 'L': (0, -1), 'R': (0, 1)}
 
 
-def vec_plus(v1: Tuple[int, int], v2: Tuple[int, int]):
+Vector: TypeAlias = Tuple[int, int]
+BaseBoard: TypeAlias = list[list[str]]
+Vectors: TypeAlias = list[Vector]
+
+def vec_plus(v1: Vector, v2: Vector):
     x: List[int] = []
     for i in range(len(v1)):
         x.append(v1[i]+v2[i])
@@ -16,10 +20,12 @@ def vec_plus(v1: Tuple[int, int], v2: Tuple[int, int]):
 
 
 class Board:
-    def __init__(self, baseboard: list[list[str]]):
+    def __init__(self, baseboard: BaseBoard):
         self.brd = baseboard
+        self.targets: Vectors = []
+        self.find_OoIs()
 
-    def is_valid_move(self, pos: Tuple[int, int]):
+    def is_valid_move(self, pos: Vector) -> bool:
         x, y = pos
         return 0 <= x < len(self.brd) and \
             0 <= y < len(self.brd[0]) and \
@@ -43,46 +49,29 @@ class Board:
                 children.append(Board(new_brd))
         return children
 
-    @staticmethod
-    def newmann_walking_distance(p1, p2):
-        (x1, y1) = p1
-        (x2, y2) = p2
-        return abs(x1 - x2) + abs(y1 - y2)
-
-    def solved(self):
-        for row in self.brd:
-            for cell in row:
-                if cell == '*':
-                    return False
-        return True
-
-    def find_OoIs(self) -> Tuple[Tuple[int, int], List[Tuple[int, int]], List[Tuple[int, int]]]:
+    def find_OoIs(self) -> Tuple[Vector, Vectors, Vectors]:
         """
         Returns the player, box and target positions
         """
-        boxes: List[Tuple[int, int]] = []
-        target_positions: List[Tuple[int, int]] = []
+        boxes: Vectors = []
+        target_positions: Vectors = []
         for i in range(len(self.brd)):
             for j in range(len(self.brd[0])):
                 if self.brd[i][j] == '@':
-                    robot_pos: Tuple[int, int] = (i, j)
+                    robot_pos: Vector = (i, j)
                 elif self.brd[i][j] == 'X':
                     boxes.append((i, j))
                 elif self.brd[i][j] == '*':
                     target_positions.append((i, j))
+        if len(self.targets)==0:
+            self.targets=target_positions
+        else:
+            target_positions=self.targets
         return (robot_pos, boxes, target_positions)
 
-    def lower_bound(self):
-        """
-        You have to move at least one box to its destination starting from where you pick up;
-        We take max(over boxes) of { min(over targets) of distance }
-        """
-        total_distance = 0
-        robot_pos, boxes, target_positions = self.find_OoIs()
-        min_targets = map(lambda box: min([Board.newmann_walking_distance(
-            box, target) for target in target_positions]), boxes)
-        min_distance = max(min_targets)
-        return min_distance
+    def solved(self) -> bool:
+        _, boxes, trgts = self.find_OoIs()
+        return set(boxes) == set(trgts)
 
     def __repr__(self):
         return '\n'.join(''.join(row) for row in self.brd)
@@ -106,7 +95,7 @@ def DFBnB(board: Board):
     for brd in board.find_children():
         soln = DFBnB(brd)
         if soln is not None:
-            out = [board].extend(soln)
+            out = [board]+(soln)
 
     return out
 
@@ -138,11 +127,11 @@ boards = [
     ]]
 
 for board in boards:
-    U = 20
-    result = soko_solver(board)
-    print(U)
-    if result is not None:
-        print("Solution found:")
-        print(result)
-    else:
-        print("No solution found.")
+   U=12+len(inspect.stack())
+   result = soko_solver(board)
+   print(U)
+   if result is not None:
+      print("Solution found:")
+      print(result)
+   else:
+      print("No solution found.")
