@@ -23,7 +23,10 @@ class Board:
     def __init__(self, baseboard: BaseBoard):
         self.brd = baseboard
         self.targets: Vectors = []
-        self.find_OoIs()
+        for i in range(len(self.brd)):
+            for j in range(len(self.brd[0])):
+                if self.brd[i][j] == '*':
+                    self.targets.append((i, j))
 
     def is_valid_move(self, pos: Vector) -> bool:
         x, y = pos
@@ -57,22 +60,16 @@ class Board:
         Returns the player, box and target positions
         """
         boxes: Vectors = []
-        target_positions: Vectors = []
         for i in range(len(self.brd)):
             for j in range(len(self.brd[0])):
                 if self.brd[i][j] == '@':
                     robot_pos: Vector = (i, j)
                 elif self.brd[i][j] == 'X':
                     boxes.append((i, j))
-                elif self.brd[i][j] == '*':
-                    target_positions.append((i, j))
-        if len(self.targets)==0:
-            self.targets=target_positions
-        else:
-            target_positions=self.targets
-        return (robot_pos, boxes, target_positions)
+        return (robot_pos, boxes, self.targets)
 
     def solved(self) -> bool:
+        breakpoint()
         _, boxes, trgts = self.find_OoIs()
         return set(boxes) == set(trgts)
 
