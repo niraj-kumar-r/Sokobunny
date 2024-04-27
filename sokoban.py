@@ -70,7 +70,7 @@ class Board:
         _, boxes = self.find_OoIs()
         return set(boxes) == set(self.targets)
 
-    def __repr__(self):
+    def __str__(self):
         # symbol_mapping = {
         #     '.': '-',  # Empty space
         #     '#': '█',  # Wall
@@ -103,7 +103,7 @@ def soko_solver(board: list[str]):
     return DFBnB(board2)
 
 
-def DFBnB(board: Board) -> Optional[List[Board]]:
+def DFBnB(board: Board) -> Optional[List[str]]:
     global U
     if len(inspect.stack()) > U:
         return None
