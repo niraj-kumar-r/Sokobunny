@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-type Vector = (i32, i32);
+type Vector = (i16, i16);
 type BaseBoard = Vec<Vec<char>>;
 type Vectors = Vec<Vector>;
 
@@ -9,31 +9,11 @@ fn vec_plus(v1: Vector, v2: Vector) -> Vector {
     (v1.0 + v2.0, v1.1 + v2.1)
 }
 
+#[derive(Clone)]
 struct Board {
     brd: BaseBoard,
     targets: Vectors,
 }
-
-impl fmt::Display for Board {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let symbol_mapping = [
-            ('.', '⬛'),  // Empty space
-            ('#', '🟦'),  // Wall
-            ('X', '🟫'),  // Box
-            ('@', '🚶'),  // Player
-            ('*', '🎯')   // Target
-        ].iter().cloned().collect::<HashMap<_, _>>();
-
-        for row in &self.brd {
-            for &cell in row {
-                write!(f, "{}", symbol_mapping.get(&cell).unwrap_or(&' '))?;
-            }
-            writeln!(f)?;
-        }
-        Ok(())
-    }
-}
-
 
 impl Board {
     fn new(baseboard: BaseBoard, targets: Vectors) -> Self {
@@ -45,15 +25,22 @@ impl Board {
 
     fn is_valid_move(&self, pos: Vector) -> bool {
         let (x, y) = pos;
-        x >= 0 && x < self.brd.len() as i32 && y >= 0 && y < self.brd[0].len() as i32 && self.brd[x as usize][y as usize] != '#'
+        x >= 0 && x < self.brd.len() as i16 && y >= 0 && y < self.brd[0].len() as i16 && self.brd[x as usize][y as usize] != '#'
     }
 
     fn find_children(&self) -> Vec<Board> {
-        let DIRECTIONS = [('U', (0, -1)), ('D', (0, 1)), ('L', (-1, 0)), ('R', (1, 0))];
-        let mut children = Vec::new();
-        let (pos, _) = self.find_OoIs();
-        for (_, dir) in DIRECTIONS.iter() {
+        let mut children = vec![];
+        let (pos, _) = self.find_o_o_is();
+        let directions: HashMap<char, Vector> = [
+            ('U', (-1, 0)),
+            ('D', (1, 0)),
+            ('L', (0, -1)),
+            ('R', (0, 1)),
+        ].iter().cloned().collect();
+
+        for (_, dir) in &directions {
             let new_pos = vec_plus(pos, *dir);
+
             if self.is_valid_move(new_pos) {
                 let mut new_brd = self.brd.clone();
                 if new_brd[new_pos.0 as usize][new_pos.1 as usize] == 'X' {
@@ -63,7 +50,7 @@ impl Board {
                     }
                     new_brd[block_new_pos.0 as usize][block_new_pos.1 as usize] = 'X';
                 }
-                if self.targets.contains(&pos) {
+                if self.targets.contains(&(pos.0, pos.1)) {
                     new_brd[pos.0 as usize][pos.1 as usize] = '*';
                 } else {
                     new_brd[pos.0 as usize][pos.1 as usize] = '.';
@@ -75,15 +62,16 @@ impl Board {
         children
     }
 
-    fn find_OoIs(&self) -> (Vector, Vectors) {
-        let mut boxes = Vec::new();
+    fn find_o_o_is(&self) -> (Vector, Vectors) {
+        let mut boxes = vec![];
         let mut robot_pos = (0, 0);
-        for (i, row) in self.brd.iter().enumerate() {
-            for (j, &cell) in row.iter().enumerate() {
-                if cell == '@' {
-                    robot_pos = (i as i32, j as i32);
-                } else if cell == 'X' {
-                    boxes.push((i as i32, j as i32));
+
+        for i in 0..self.brd.len() {
+            for j in 0..self.brd[0].len() {
+                if self.brd[i][j] == '@' {
+                    robot_pos = (i as i16, j as i16);
+                } else if self.brd[i][j] == 'X' {
+                    boxes.push((i as i16, j as i16));
                 }
             }
         }
@@ -91,49 +79,104 @@ impl Board {
     }
 
     fn solved(&self) -> bool {
-        let (_, boxes) = self.find_OoIs();
+        let (_, boxes) = self.find_o_o_is();
         boxes.iter().all(|box_pos| self.targets.contains(box_pos))
     }
+}
 
+impl fmt::Display for Board {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let symbol_mapping: HashMap<char, char> = [
+            ('.', '⬛'),
+            ('#', '🟦'),
+            ('X', '🟫'),
+            ('@', '🚶'),
+            ('*', '🎯'),
+        ].iter().cloned().collect();
 
+        for row in &self.brd {
+            for &cell in row {
+                write!(f, "{}", symbol_mapping.get(&cell).unwrap_or(&' '))?;
+            }
+            writeln!(f)?;
+        }
+        Ok(())
+    }
 }
 
 fn soko_solver(board: Vec<&str>) -> Option<Vec<String>> {
-    let mut board1: BaseBoard = board.iter().map(|row| row.chars().collect()).collect();
+    let board1: BaseBoard = board.iter().map(|row| row.chars().collect()).collect();
 
-    let mut targets = Vec::new();
+    let mut targets = vec![];
     for (i, row) in board.iter().enumerate() {
         for (j, cell) in row.chars().enumerate() {
             if cell == '*' {
-                targets.push((i as i32, j as i32));
+                targets.push((i as i16, j as i16));
             }
         }
     }
     let board2 = Board::new(board1, targets);
-    DFBnB(board2, 16)
-}
-
-fn DFBnB(board: Board, u: usize) -> Option<Vec<String>> {
-    if std::thread::current().stack().len() > u {
-        return None;
-    }
-    if board.solved() {
-        return Some(vec![board.to_string()]);
-    }
-
-    let mut out = None;
-    for brd in board.find_children() {
-        if let Some(soln) = DFBnB(brd, u) {
-            let mut new_out = vec![board.to_string()];
-            new_out.extend(soln);
-            out = Some(new_out);
+    match dfbnb(board2, 0){
+        Some((res, _)) => {
+            return Some(res)
+        }
+        None => {
+            return None
         }
     }
+}
 
+fn dfbnb(board: Board, U: u16) -> Option<(Vec<String>, u16)> {
+    if U>21 {return None};
+
+    if board.solved() {
+        return Some((vec![board.to_string()], U));
+    }
+
+    let mut u_remembered = U;
+    let mut out = None;
+    for brd in board.find_children() {
+        if let Some((mut soln, u)) = dfbnb(brd, u_remembered+1) {
+            soln.insert(0, board.to_string());
+            out = Some((soln, u));
+            u_remembered = u;
+        }
+    }
     out
 }
 
+fn main() {
+    let boards = vec![
+        vec![".@.", "#X.", "#*."],
+        vec!["X##", "#@#", "##*"],
+        vec![
+            "########",
+            "#..#@.#.",
+            "#....X.#",
+            "#...#.X.",
+            "#####**#",
+            "....#.##",
+            "....####",
+        ],
+        vec![
+            "########",
+            "#..#@...",
+            "#...#XX#",
+            "#...#..#",
+            "####*.*#",
+            "....#.##",
+            "....####",
+        ],
+    ];
 
-fn main() -> (){
-    
+    for board in boards {
+        if let Some(result) = soko_solver(board) {
+            println!("Solution found:");
+            for brd in result {
+                println!("{}", brd);
+            }
+        } else {
+            println!("No solution found.");
+        }
+    }
 }
