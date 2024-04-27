@@ -49,6 +49,7 @@ impl Board {
     }
 
     fn find_children(&self) -> Vec<Board> {
+        let DIRECTIONS = [('U', (0, -1)), ('D', (0, 1)), ('L', (-1, 0)), ('R', (1, 0))];
         let mut children = Vec::new();
         let (pos, _) = self.find_OoIs();
         for (_, dir) in DIRECTIONS.iter() {
@@ -133,4 +134,6 @@ fn DFBnB(board: Board, u: usize) -> Option<Vec<String>> {
 }
 
 
-
+fn main() -> (){
+    
+}
