@@ -20,13 +20,9 @@ def vec_plus(v1: Vector, v2: Vector):
 
 
 class Board:
-    def __init__(self, baseboard: BaseBoard):
+    def __init__(self, baseboard: BaseBoard, targets: Vectors):
         self.brd = baseboard
-        self.targets: Vectors = []
-        for i in range(len(self.brd)):
-            for j in range(len(self.brd[0])):
-                if self.brd[i][j] == '*':
-                    self.targets.append((i, j))
+        self.targets: Vectors = targets
 
     def is_valid_move(self, pos: Vector) -> bool:
         x, y = pos
@@ -36,7 +32,7 @@ class Board:
 
     def find_children(self) -> List[Board]:
         children: List[Board] = []
-        pos, _, __ = self.find_OoIs()
+        pos, _ = self.find_OoIs()
         for ele in directions:
             new_pos = vec_plus(pos, directions[ele])
 
@@ -50,9 +46,9 @@ class Board:
                 if (new_brd[pos[0]][pos[1]] in self.targets):
                     new_brd[pos[0]][pos[1]] = "*"
                 else:
-                    new_brd[pos[0]][pos[1]] = "*"
+                    new_brd[pos[0]][pos[1]] = "."
                 new_brd[new_pos[0]][new_pos[1]] = "@"
-                children.append(Board(new_brd))
+                children.append(Board(new_brd, self.targets))
         return children
     
     def find_OoIs(self) -> Tuple[Vector, Vectors, Vectors]:
@@ -66,12 +62,12 @@ class Board:
                     robot_pos: Vector = (i, j)
                 elif self.brd[i][j] == 'X':
                     boxes.append((i, j))
-        return (robot_pos, boxes, self.targets)
+        return (robot_pos, boxes)
 
     def solved(self) -> bool:
-        breakpoint()
-        _, boxes, trgts = self.find_OoIs()
-        return set(boxes) == set(trgts)
+        #breakpoint()
+        _, boxes = self.find_OoIs()
+        return set(boxes) == set(self.targets)
 
     def __repr__(self):
         return '\n'.join(''.join(row) for row in self.brd)+'\n'
@@ -79,7 +75,13 @@ class Board:
 
 def soko_solver(board: list[str]):
     board1 = [list(row) for row in board]
-    board2 = Board(board1)
+
+    targets=[]
+    for i in range(len(board)):
+        for j in range(len(board[0])):
+            if board[i][j] == '*':
+                targets.append((i, j))
+    board2 = Board(board1, targets)
     return DFBnB(board2)
 
 
