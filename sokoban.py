@@ -106,7 +106,7 @@ def DFBnB(board: Board) -> Optional[List[Board]]:
     for brd in board.find_children():
         soln = DFBnB(brd)
         if soln is not None:
-            out = [board].extend(soln)
+            out = [board] + soln
 
     return out
 
@@ -138,7 +138,7 @@ boards = [
     ]]
 
 for board in boards:
-    U = 50
+    U = 20
     result = soko_solver(board)
     print(U)
     if result is not None:
