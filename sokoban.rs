@@ -89,6 +89,7 @@ impl fmt::Display for Board {
         let symbol_mapping: HashMap<char, char> = [
             ('.', '⬛'),
             ('#', '🟦'),
+            (' ', '🟥'),
             ('X', '🟫'),
             ('@', '🚶'),
             ('*', '🎯'),
@@ -104,7 +105,7 @@ impl fmt::Display for Board {
     }
 }
 
-fn soko_solver(board: Vec<&str>) -> Option<Vec<String>> {
+fn soko_solver(board: Vec<&str>, limit: u16) -> Option<Vec<String>> {
     let board1: BaseBoard = board.iter().map(|row| row.chars().collect()).collect();
 
     let mut targets = vec![];
@@ -116,7 +117,7 @@ fn soko_solver(board: Vec<&str>) -> Option<Vec<String>> {
         }
     }
     let board2 = Board::new(board1, targets);
-    match dfbnb(board2, 0, 21){
+    match dfbnb(board2, 0, limit){
         Some((res, _)) => {
             return Some(res)
         }
@@ -149,15 +150,23 @@ fn dfbnb(board: Board, q: u16, U: u16) -> Option<(Vec<String>, u16)> {
 fn main() {
     let boards = vec![
         vec![".@.", "#X.", "#*."],
-        vec!["X..", ".@.", "..*"],
+        vec!["X#.", ".@#", "..*"],
         vec![
             "########",
             "#..#@.#.",
             "#....X.#",
             "#...#.X.",
             "#####**#",
-            "....#.##",
-            "....####",
+            "    #.##",
+            "    ####",
+        ],
+        vec![
+            "#######",
+            "#.....#",
+            "#...@.#",
+            "#.X.#.#",
+            "#...#*#",
+            "#######"
         ],
         vec![
             "########",
@@ -165,13 +174,14 @@ fn main() {
             "#...#XX#",
             "#...#..#",
             "####*.*#",
-            "....#.##",
-            "....####",
-        ],
+            "   ##.##",
+            "    ####",
+        ]
     ];
 
     for board in boards {
-        if let Some(result) = soko_solver(board) {
+        let board_len = board.len() as u16;
+        if let Some(result) = soko_solver(board, board_len.pow(2)) {
             println!("Solution found:");
             for brd in result {
                 println!("{}", brd);
