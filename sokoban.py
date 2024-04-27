@@ -94,7 +94,7 @@ def soko_solver(board: list[str]):
     return DFBnB(board2)
 
 
-def DFBnB(board: Board):
+def DFBnB(board: Board) -> Optional[List[Board]]:
     global U
     if len(inspect.stack()) > U:
         return None
