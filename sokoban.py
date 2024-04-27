@@ -1,6 +1,5 @@
 from __future__ import annotations
 import inspect
-from collections import deque
 import copy
 from typing import TypeAlias, List, Dict, Tuple, Optional
 
@@ -115,22 +114,27 @@ boards = [
         ".*."
     ],
     [
-        "X##",
-        "#@#",
-        "##*"
+        "X..",
+        "*@.",
+        "..."
     ],
     [
-        "########",
-        "#..#@.#.",
-        "#....X.#",
-        "#...#.X.",
-        "#####**#",
-        "....#.##",
-        "....####"
+        "@.....",
+        ".X....",
+        "...#.#",
+        "...#*#"
+    ],
+    [
+        "..#@.##",
+        "....X.#",
+        "...#.X.",
+        "####**#",
+        "   #.##",
+        "   ####"
     ]]
 
 for board in boards:
-   U=12+len(inspect.stack())
+   U=len(board)**2+len(inspect.stack())
    result = soko_solver(board)
    print(U-len(inspect.stack()))
    if result is not None:
