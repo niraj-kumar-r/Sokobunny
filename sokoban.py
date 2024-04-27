@@ -38,16 +38,17 @@ class Board:
 
             if self.is_valid_move(new_pos):
                 new_brd = copy.deepcopy(self.brd)
+                block_new_pos = [(-1, -1)]
                 if new_brd[new_pos[0]][new_pos[1]] == 'X':  # Pushing the box
                     block_new_pos = vec_plus(new_pos, directions[ele])
                     if not self.is_valid_move(block_new_pos):
                         continue
                     new_brd[block_new_pos[0]][block_new_pos[1]] = "X"
-                if (new_brd[pos[0]][pos[1]] in self.targets):
-                    new_brd[pos[0]][pos[1]] = "*"
-                else:
-                    new_brd[pos[0]][pos[1]] = "."
+                new_brd[pos[0]][pos[1]] = "."
                 new_brd[new_pos[0]][new_pos[1]] = "@"
+                for pos2 in self.targets:
+                    if not (pos2 == new_pos or pos2 == block_new_pos):
+                        new_brd[pos2[0]][pos2[1]] = "*"
                 children.append(Board(new_brd, self.targets))
         return children
 
@@ -70,7 +71,25 @@ class Board:
         return set(boxes) == set(self.targets)
 
     def __str__(self):
-        return '\n'.join(' '.join(row) for row in self.brd)+'\n'
+        # symbol_mapping = {
+        #     '.': '-',  # Empty space
+        #     '#': '█',  # Wall
+        #     'X': 'X',  # Box
+        #     '@': '☺',  # Player
+        #     '*': '★'  # Target
+        # }\
+        # ⬛🟦🟫📦🚶🎯
+
+        symbol_mapping = {
+            '.': '⬛',  # Empty space
+            '#': '🟦',  # Wall
+            ' ': '🟥',  # Outer space
+            'X': '🟫',  # Box
+            '@': '🚶',  # Player
+            '*': '🎯'  # Target
+        }
+
+        return '\n'.join(''.join(symbol_mapping.get(cell, '  ') for cell in row) for row in self.brd)+'\n'
 
 
 def soko_solver(board: list[str]):
@@ -85,7 +104,7 @@ def soko_solver(board: list[str]):
     return DFBnB(board2)
 
 
-def DFBnB(board: Board) -> Optional[List[Board]]:
+def DFBnB(board: Board) -> Optional[List[str]]:
     global U
     if len(inspect.stack()) > U:
         return None
@@ -110,8 +129,8 @@ def DFBnB(board: Board) -> Optional[List[Board]]:
 boards = [
     [
         ".@.",
-        ".X.",
-        ".*."
+        "X..",
+        "*.."
     ],
     [
         "X..",
@@ -119,10 +138,10 @@ boards = [
         "..."
     ],
     [
-        "@.....",
-        ".X....",
-        "...#.#",
-        "...#*#"
+        "@....",
+        ".X...",
+        "####.",
+        "   #*"
     ],
     [
         "..#@.##",
@@ -134,11 +153,12 @@ boards = [
     ]]
 
 for board in boards:
-   U=len(board)**2+len(inspect.stack())
-   result = soko_solver(board)
-   print(U-len(inspect.stack()))
-   if result is not None:
-      print("Solution found:")
-      print('\n'.join(result))
-   else:
-      print("No solution found.")
+    U = len(board)**2+len(inspect.stack())
+    result = soko_solver(board)
+    print(U-len(inspect.stack()))
+    if result is not None:
+        print("Solution found:")
+        for brd in result:
+            print(brd, end='\n')
+    else:
+        print("No solution found.")
