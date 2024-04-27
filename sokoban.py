@@ -71,7 +71,24 @@ class Board:
         return set(boxes) == set(self.targets)
 
     def __repr__(self):
-        return '\n'.join(''.join(row) for row in self.brd)+'\n'
+        # symbol_mapping = {
+        #     '.': '-',  # Empty space
+        #     '#': '█',  # Wall
+        #     'X': 'X',  # Box
+        #     '@': '☺',  # Player
+        #     '*': '★'  # Target
+        # }\
+        # ⬛🟦🟫📦🚶🎯
+
+        symbol_mapping = {
+            '.': '⬛',  # Empty space
+            '#': '🟦',  # Wall
+            'X': '🟫',  # Box
+            '@': '🚶',  # Player
+            '*': '🎯'  # Target
+        }
+
+        return '\n'.join(''.join(symbol_mapping.get(cell, '  ') for cell in row) for row in self.brd)+'\n'
 
 
 def soko_solver(board: list[str]):
@@ -111,8 +128,8 @@ def DFBnB(board: Board) -> Optional[List[Board]]:
 boards = [
     [
         ".@.",
-        ".X.",
-        ".*."
+        "#X.",
+        "#*."
     ],
     [
         "X##",
@@ -135,6 +152,7 @@ for board in boards:
     print(U)
     if result is not None:
         print("Solution found:")
-        print(result)
+        for brd in result:
+            print(brd, end='\n')
     else:
         print("No solution found.")
