@@ -69,8 +69,8 @@ class Board:
         _, boxes = self.find_OoIs()
         return set(boxes) == set(self.targets)
 
-    def __repr__(self):
-        return '\n'.join(''.join(row) for row in self.brd)+'\n'
+    def __str__(self):
+        return '\n'.join(' '.join(row) for row in self.brd)+'\n'
 
 
 def soko_solver(board: list[str]):
@@ -91,13 +91,13 @@ def DFBnB(board: Board) -> Optional[List[Board]]:
         return None
     if board.solved():
         U = min(U, len(inspect.stack()))
-        return [board]
+        return [str(board)]
 
     out = None
     for brd in board.find_children():
         soln = DFBnB(brd)
         if soln is not None:
-            out = [board] + soln
+            out = [str(board)] + soln
 
     return out
 
@@ -131,9 +131,9 @@ boards = [
 for board in boards:
    U=12+len(inspect.stack())
    result = soko_solver(board)
-   print(U)
+   print(U-len(inspect.stack()))
    if result is not None:
       print("Solution found:")
-      print(result)
+      print('\n'.join(result))
    else:
       print("No solution found.")
