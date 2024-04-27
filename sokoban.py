@@ -12,7 +12,8 @@ Vector: TypeAlias = Tuple[int, int]
 BaseBoard: TypeAlias = list[list[str]]
 Vectors: TypeAlias = list[Vector]
 
-def vec_plus(v1: Vector, v2: Vector):
+
+def vec_plus(v1: Vector, v2: Vector) -> Vector:
     x: List[int] = []
     for i in range(len(v1)):
         x.append(v1[i]+v2[i])
@@ -50,8 +51,8 @@ class Board:
                 new_brd[new_pos[0]][new_pos[1]] = "@"
                 children.append(Board(new_brd, self.targets))
         return children
-    
-    def find_OoIs(self) -> Tuple[Vector, Vectors, Vectors]:
+
+    def find_OoIs(self) -> Tuple[Vector, Vectors]:
         """
         Returns the player, box and target positions
         """
@@ -65,7 +66,7 @@ class Board:
         return (robot_pos, boxes)
 
     def solved(self) -> bool:
-        #breakpoint()
+        # breakpoint()
         _, boxes = self.find_OoIs()
         return set(boxes) == set(self.targets)
 
@@ -76,7 +77,7 @@ class Board:
 def soko_solver(board: list[str]):
     board1 = [list(row) for row in board]
 
-    targets=[]
+    targets = []
     for i in range(len(board)):
         for j in range(len(board[0])):
             if board[i][j] == '*':
