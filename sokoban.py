@@ -25,8 +25,8 @@ class Board:
             0 <= y < len(self.brd[0]) and \
             self.brd[x][y] != '#'
 
-    def find_children(self):
-        children = []
+    def find_children(self) -> List[Board]:
+        children: List[Board] = []
         pos, _, __ = self.find_OoIs()
         for ele in directions:
             new_pos = vec_plus(pos, directions[ele])
@@ -43,13 +43,13 @@ class Board:
                 children.append(Board(new_brd))
         return children
 
-    @staticmethod
-    def newmann_walking_distance(p1, p2):
-        (x1, y1) = p1
-        (x2, y2) = p2
-        return abs(x1 - x2) + abs(y1 - y2)
+   #  @staticmethod
+   #  def newmann_walking_distance(p1, p2):
+   #      (x1, y1) = p1
+   #      (x2, y2) = p2
+   #      return abs(x1 - x2) + abs(y1 - y2)
 
-    def solved(self):
+    def solved(self) -> bool:
         for row in self.brd:
             for cell in row:
                 if cell == '*':
@@ -72,17 +72,17 @@ class Board:
                     target_positions.append((i, j))
         return (robot_pos, boxes, target_positions)
 
-    def lower_bound(self):
-        """
-        You have to move at least one box to its destination starting from where you pick up;
-        We take max(over boxes) of { min(over targets) of distance }
-        """
-        total_distance = 0
-        robot_pos, boxes, target_positions = self.find_OoIs()
-        min_targets = map(lambda box: min([Board.newmann_walking_distance(
-            box, target) for target in target_positions]), boxes)
-        min_distance = max(min_targets)
-        return min_distance
+   #  def lower_bound(self):
+   #      """
+   #      You have to move at least one box to its destination starting from where you pick up;
+   #      We take max(over boxes) of { min(over targets) of distance }
+   #      """
+   #      total_distance = 0
+   #      robot_pos, boxes, target_positions = self.find_OoIs()
+   #      min_targets = map(lambda box: min([Board.newmann_walking_distance(
+   #          box, target) for target in target_positions]), boxes)
+   #      min_distance = max(min_targets)
+   #      return min_distance
 
     def __repr__(self):
         return '\n'.join(''.join(row) for row in self.brd)
@@ -138,7 +138,7 @@ boards = [
     ]]
 
 for board in boards:
-    U = 20
+    U = 50
     result = soko_solver(board)
     print(U)
     if result is not None:
