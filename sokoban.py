@@ -51,13 +51,6 @@ class Board:
                 new_brd[new_pos[0]][new_pos[1]] = "@"
                 children.append(Board(new_brd))
         return children
-
-    def solved(self) -> bool:
-        for row in self.brd:
-            for cell in row:
-                if cell == '*':
-                    return False
-        return True
     
     def find_OoIs(self) -> Tuple[Vector, Vectors, Vectors]:
         """
