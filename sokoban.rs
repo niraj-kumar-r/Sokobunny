@@ -30,7 +30,7 @@ impl Board {
 
     fn find_children(&self) -> Vec<Board> {
         let mut children = vec![];
-        let (pos, _) = self.find_o_o_is();
+        let (pos, _) = self.find_OoIs();
         let directions: HashMap<char, Vector> = [
             ('U', (-1, 0)),
             ('D', (1, 0)),
@@ -62,7 +62,7 @@ impl Board {
         children
     }
 
-    fn find_o_o_is(&self) -> (Vector, Vectors) {
+    fn find_OoIs(&self) -> (Vector, Vectors) {
         let mut boxes = vec![];
         let mut robot_pos = (0, 0);
 
@@ -79,7 +79,7 @@ impl Board {
     }
 
     fn solved(&self) -> bool {
-        let (_, boxes) = self.find_o_o_is();
+        let (_, boxes) = self.find_OoIs();
         boxes.iter().all(|box_pos| self.targets.contains(box_pos))
     }
 }
@@ -116,7 +116,7 @@ fn soko_solver(board: Vec<&str>) -> Option<Vec<String>> {
         }
     }
     let board2 = Board::new(board1, targets);
-    match dfbnb(board2, 0){
+    match dfbnb(board2, 0, 21){
         Some((res, _)) => {
             return Some(res)
         }
@@ -126,17 +126,18 @@ fn soko_solver(board: Vec<&str>) -> Option<Vec<String>> {
     }
 }
 
-fn dfbnb(board: Board, U: u16) -> Option<(Vec<String>, u16)> {
-    if U>21 {return None};
+fn dfbnb(board: Board, q: u16, U: u16) -> Option<(Vec<String>, u16)> {
+    if q>=U {return None};
 
     if board.solved() {
-        return Some((vec![board.to_string()], U));
+        return Some((vec![board.to_string()], q));
     }
 
     let mut u_remembered = U;
     let mut out = None;
     for brd in board.find_children() {
-        if let Some((mut soln, u)) = dfbnb(brd, u_remembered+1) {
+        if let Some((mut soln, u)) = dfbnb(brd, q+1, u_remembered) {
+            //if u>u_remembered {continue}
             soln.insert(0, board.to_string());
             out = Some((soln, u));
             u_remembered = u;
@@ -148,7 +149,7 @@ fn dfbnb(board: Board, U: u16) -> Option<(Vec<String>, u16)> {
 fn main() {
     let boards = vec![
         vec![".@.", "#X.", "#*."],
-        vec!["X##", "#@#", "##*"],
+        vec!["X..", ".@.", "..*"],
         vec![
             "########",
             "#..#@.#.",
